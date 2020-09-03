@@ -16,6 +16,7 @@ def DB():
             pass
 
             # Создание записи в таблице person.elector (таблица с УИП)
+
             sys_elector_id = 123456789
 
             cursor.execute("""

@@ -44,16 +44,30 @@ def gen_doc_issue_date(birth):
         return birth + timedelta(days=458365 + 12 + 15)  # 12 - возможное количество високосных годов
 
 def gen_doc_number(type):
-    pass
+    if type == 0:
+        randSer2 = str(random.randint(1, 99))
+        series = str(random.randint(10, 80)) + ' ' + '0' * (2 - len(randSer2)) + randSer2
+        number = str(random.randint(1, 999999))
+        number = '0' * (6 - len(number)) + number
+    elif type == 1:
+        alphabet = 'АВЕКМНОРСТХ'
+        romanNum = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X']
+        number = str(random.randint(1, 999999))
+        number = '0' * (6 - len(number)) + number
+        series = romanNum[random.randint(0, 9)] + '-T' + alphabet[random.randint(0, 10)]
+    else:
+        number = ''
+        series = ''
+    return [series, number]
 
 class UIP:
-    def __init__(self, gender, ageMin, ageMax, capacity, doc_code):
+    def __init__(self, sys_elector_id, gender, ageMin, ageMax, capacity):
         # Словарь пола
         genderList = {1: Gender.MALE, 2: Gender.FEMALE}
         # Суффиксы отчества в зависимоти от пола
         genderSuffix = {1: 'ович', 2: 'овна'}
         #Словарь типов документа
-        docList = {0:[10,9], 1:[1,1]}
+        docList = {0:[10,9], 1:[123456789,5]}
         person = Person('ru')
 
         #Генерация даты рождения в завсимости от возраста
@@ -68,21 +82,27 @@ class UIP:
         self.gender_id = gender
         self.capacity_id = capacity
         self.country_id = 643
-        self.start_date = birth.strftime('%Y-%m-%d') + ' 00:00:00+03' #для таблицы elector
-        self.input_source_id = 1
-        #НЕТ ИНФОРМАЦИИ О СПОСОБЕ ГЕНЕРАЦИИ ПОЛЯ        self.sys_elector_id = ''
+        self.start_date = birth.strftime('%Y-%m-%d') + ' 00:00:00' #для таблицы elector
+        #НЕТ ИНФОРМАЦИИ О СПОСОБЕ ГЕНЕРАЦИИ ПОЛЯ (пока приходит готовое) sys_elector_id
+        self.sys_elector_id = sys_elector_id
         self.address_id = 1
 
         # Данные для таблицы elector_doc
-        #НЕПОНЯТНО КАК МЕНЯТЬ (ТАК КАК У КАЖДОГО УИП СВОЕ МЕСТО ВЫДАЧИ ДОКУМЕНТА)        self.subject_id = ''
+        #НЕПОНЯТНО КАК МЕНЯТЬ (ТАК КАК У КАЖДОГО УИП СВОЕ МЕСТО ВЫДАЧИ ДОКУМЕНТА). Сейчас одинаковое значение:
+        self.subject_global_id = 123
+
+        if ageMax < 14:
+            doc_code = 1
+        else:
+            doc_code = 0
         self.elector_doc_code_id = docList[doc_code][0]
-        self.elect_doc_series = ''
-        self.elect_doc_number = ''
-        #НЕТ ИНФОРМАЦИИ О ПОЛЕ self.start_date2 = '' #для таблицы elector_doc
+        doc_data = gen_doc_number(doc_code)
+        self.elect_doc_series = doc_data[0]
+        self.elect_doc_number = doc_data[1]
+        self.start_date2 = datetime.now().strftime('%Y-%m-%d %H:%M:%S') #для таблицы elector_doc
 
         self.elect_doc_issue_date = gen_doc_issue_date(birth).strftime('%Y-%m-%d')
         self.elector_doc_type_id = docList[doc_code][1]
-        self.start_date = birth + timedelta(days=20)
 
         # Данные для таблицы elector_residence
         self.elector_residence_kind_id = 1
@@ -94,5 +114,25 @@ class UIP:
         self.change_basis_id = 85
         #БУДЕТ БРАТЬСЯ ИЗ ID СОЗДАННОГО person: self.elector_id = ''
         #БУДЕТ БРАТЬСЯ ИЗ ID СОЗДАННОГО документа self.elector_doc_id
-people = UIP(1, 14, 17, 1, 0)
-print(people.birth_day + ' ||| ' + people.elect_doc_issue_date)
+        #БУДЕТ БРАТЬСЯ ИЗ ID СОЗДАННОГО elector_residence self.elector_residence_id
+
+    def getElector(self):
+        return [self.last_name, self.first_name, self.middle_name, self.birth_day, self.birth_day_string,
+                self.gender_id, self.capacity_id, self.country_id, self.start_date, 1,
+                self.sys_elector_id, self.address_id]
+
+    def getElector_king(self):
+        return [self.sys_elector_id, self.start_date2, '[{"id": 1}]']
+
+    def getElector_doc(self):
+        return [self.sys_elector_id, self.subject_global_id, self.elector_doc_code_id, self.elect_doc_series,
+                self.elect_doc_number, 1, self.start_date2, self.elect_doc_issue_date, self.elector_doc_type_id]
+
+    def getElector_residence(self):
+        pass
+
+# Нужно генерировать sys_elector_id; брать из БД subject_global_id, residence_address_id
+people = UIP(sys_elector_id=123456789, gender=1, ageMin=0, ageMax=13, capacity=1)
+print(people.getElector())
+print(people.getElector_king())
+print(people.getElector_doc())
