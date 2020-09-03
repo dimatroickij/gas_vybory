@@ -29,6 +29,7 @@ from mimesis.enums import Gender
 def gen_datetime(ageMin, ageMax):
     start = datetime(2020 - ageMin, datetime.now().month, datetime.now().day, 00, 00, 00)
     end = datetime(2020 - ageMax - 1, datetime.now().month, datetime.now().day, 00, 00, 00) + timedelta(days=20)
+    # Проверить, почему вылетает ошибка при большой разнице возрастов
     return datetime.fromtimestamp(end.timestamp() + random.randint(0, int(start.timestamp()) - int(end.timestamp())))
 
 def gen_doc_issue_date(birth):
@@ -74,6 +75,7 @@ class UIP:
         birth = gen_datetime(ageMin, ageMax)
 
         #Данные для таблицы elector
+        self.elector_id = None # PK из таблицы
         self.last_name = person.last_name(gender=genderList[gender])
         self.first_name = person.first_name(gender=genderList[gender])
         self.middle_name = person.first_name(gender=genderList[gender]) + genderSuffix[gender]
@@ -88,6 +90,7 @@ class UIP:
         self.address_id = 1
 
         # Данные для таблицы elector_doc
+        self.elector_doc_id = None # PK из таблицы
         #НЕПОНЯТНО КАК МЕНЯТЬ (ТАК КАК У КАЖДОГО УИП СВОЕ МЕСТО ВЫДАЧИ ДОКУМЕНТА). Сейчас одинаковое значение:
         self.subject_global_id = 123
 
@@ -105,34 +108,63 @@ class UIP:
         self.elector_doc_type_id = docList[doc_code][1]
 
         # Данные для таблицы elector_residence
+        self.elector_residence_id = None # PK из таблицы
         self.elector_residence_kind_id = 1
-        #НЕПОНЯТНО КАК МЕНЯТЬ (ТАК КАК У КАЖДОГО УИП СВОЕ МЕСТО ЖИТЕЛЬСТВА)self.residence_address_id = ''
+        #НЕПОНЯТНО КАК МЕНЯТЬ (ТАК КАК У КАЖДОГО УИП СВОЕ МЕСТО ЖИТЕЛЬСТВА). Сейчас постоянное значение
+        self.residence_address_id = 111111111
 
         # Данные для таблицы elector_change_log
-        #НЕИЗВЕСТНО ЗНАЧЕНИЕ self.change_type_id = ''
-        self.change_number = 1
-        self.change_basis_id = 85
+        #НЕИЗВЕСТНО ЗНАЧЕНИЕ, но вроде везде 1
+        self.change_type_id = 1
+        self.change_number = 0
+        self.change_date = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d %H:%M:%S')
+        self.change_basis_id = 89 # 89 - листок прибытия, 85 - рождение, 97 - листок убытия
+        self.kca = 1
         #БУДЕТ БРАТЬСЯ ИЗ ID СОЗДАННОГО person: self.elector_id = ''
         #БУДЕТ БРАТЬСЯ ИЗ ID СОЗДАННОГО документа self.elector_doc_id
         #БУДЕТ БРАТЬСЯ ИЗ ID СОЗДАННОГО elector_residence self.elector_residence_id
 
+        #input_source = 1
+        self.input_source = 1
+
     def getElector(self):
         return [self.last_name, self.first_name, self.middle_name, self.birth_day, self.birth_day_string,
-                self.gender_id, self.capacity_id, self.country_id, self.start_date, 1,
+                self.gender_id, self.capacity_id, self.country_id, self.start_date, self.input_source,
                 self.sys_elector_id, self.address_id]
+
+    def setElector_id(self, elector_id):
+        self.elector_id = elector_id
 
     def getElector_king(self):
         return [self.sys_elector_id, self.start_date2, '[{"id": 1}]']
 
     def getElector_doc(self):
         return [self.sys_elector_id, self.subject_global_id, self.elector_doc_code_id, self.elect_doc_series,
-                self.elect_doc_number, 1, self.start_date2, self.elect_doc_issue_date, self.elector_doc_type_id]
+                self.elect_doc_number, self.input_source, self.start_date2, self.elect_doc_issue_date,
+                self.elector_doc_type_id]
+
+    def setElector_doc_id(self, elector_doc_id):
+        self.elector_doc_id = elector_doc_id
 
     def getElector_residence(self):
-        pass
+        return [self.sys_elector_id, self.residence_address_id, self.input_source, self.elector_residence_kind_id,
+                self.start_date2[0:10] + ' 00:00:00']
+
+    def setElector_residence_id(self, elector_residence_id):
+        self.elector_residence_id = elector_residence_id
+
+    def getElector_change_log(self):
+        return [self.elector_id, self.elector_doc_id, self.elector_residence_id, self.sys_elector_id,
+                self.change_type_id, self.change_number, self.change_date, self.start_date2, self.kca,
+                self.change_basis_id]
 
 # Нужно генерировать sys_elector_id; брать из БД subject_global_id, residence_address_id
-people = UIP(sys_elector_id=123456789, gender=1, ageMin=0, ageMax=13, capacity=1)
+people = UIP(sys_elector_id=123456789, gender=1, ageMin=18, ageMax=50, capacity=1)
 print(people.getElector())
+#people.setElector_id(123456)
 print(people.getElector_king())
 print(people.getElector_doc())
+#people.setElector_doc_id('000000')
+print(people.getElector_residence())
+#people.setElector_residence_id()
+print(people.getElector_change_log())
