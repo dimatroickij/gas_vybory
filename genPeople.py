@@ -30,7 +30,10 @@ def gen_datetime(ageMin, ageMax):
     start = datetime(2020 - ageMin, datetime.now().month, datetime.now().day, 00, 00, 00)
     end = datetime(2020 - ageMax - 1, datetime.now().month, datetime.now().day, 00, 00, 00) + timedelta(days=20)
     # Проверить, почему вылетает ошибка при большой разнице возрастов
-    return datetime.fromtimestamp(end.timestamp() + random.randint(0, int(start.timestamp()) - int(end.timestamp())))
+    date3 = int(end.timestamp())
+    date2 = int(start.timestamp()) - date3
+    date1 = random.randint(0, date2)
+    return datetime.fromtimestamp(end.timestamp() + date1)
 
 def gen_doc_issue_date(birth):
     age = int((datetime.now() - birth).days / 365.2425)
@@ -156,15 +159,15 @@ class UIP:
     def getElector_change_log(self):
         return [self.elector_id, self.elector_doc_id, self.elector_residence_id, self.sys_elector_id,
                 self.change_type_id, self.change_number, self.change_date, self.start_date2, self.kca,
-                self.change_basis_id]
+                self.change_basis_id, self.input_source]
 
 # Нужно генерировать sys_elector_id; брать из БД subject_global_id, residence_address_id
-people = UIP(sys_elector_id=123456789, gender=1, ageMin=18, ageMax=50, capacity=1)
-print(people.getElector())
-#people.setElector_id(123456)
-print(people.getElector_king())
-print(people.getElector_doc())
-#people.setElector_doc_id('000000')
-print(people.getElector_residence())
-#people.setElector_residence_id()
-print(people.getElector_change_log())
+# people = UIP(sys_elector_id=123456789, gender=1, ageMin=18, ageMax=50, capacity=1)
+# print(people.getElector())
+# #people.setElector_id(123456)
+# print(people.getElector_king())
+# print(people.getElector_doc())
+# #people.setElector_doc_id('000000')
+# print(people.getElector_residence())
+# #people.setElector_residence_id()
+# print(people.getElector_change_log())
