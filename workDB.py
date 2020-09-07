@@ -30,11 +30,14 @@ class workDB:
         self.conn.commit()
 
     def setElector_id(self):
-        self.people.setElector_id(self.cursor.execute('select elector_id from person.elector where sys_elector_id = %s'
-                                                      % self.people.sys_elector_id))
+        self.cursor.execute('select elector_id from person.elector where sys_elector_id = %s'
+                            % self.people.sys_elector_id)
+        for row in self.cursor:
+            self.people.setElector_id(row[0])
 
-    def createElectorKing(self):
-        king = self.people.getElector_king()
+
+    def createElectorKind(self):
+        king = self.people.getElector_kind()
         self.cursor.execute("""insert into person.elector_kind (sys_elector_id, create_date, elector_kinds_json) values 
                             (%(sys_elector_id)s, %(create_date)s, %(elector_kinds_json)s)""",
                             {'sys_elector_id': king[0], 'create_date': king[1], 'elector_kinds_json': king[2]})
@@ -54,8 +57,11 @@ class workDB:
         self.conn.commit()
 
     def setElector_doc_id(self):
-        self.people.setElector_doc_id(self.cursor.execute('select elector_doc_id from person.elector_doc '
-                                                          'where sys_elector_id = %s' % self.people.sys_elector_id))
+        self.cursor.execute('select elector_doc_id from person.elector_doc '
+                            'where sys_elector_id = %s' % self.people.sys_elector_id)
+        for row in self.cursor:
+            self.people.setElector_doc_id(row[0])
+        print(self.people.elector_doc_id)
 
     # Создание записи в таблице person.elector_residence (данные о месте жительства)
     def createElector_recidence(self):
@@ -70,8 +76,11 @@ class workDB:
         self.conn.commit()
 
     def setElector_residence_id(self):
-        self.people.setElector_residence_id(
-            self.cursor.execute('select elector_residence_id from person.elector_residence'))
+        self.cursor.execute('select elector_residence_id from person.elector_residence '
+                            'where sys_elector_id = %s' % self.people.sys_elector_id)
+        for row in self.cursor:
+            self.people.setElector_residence_id(row[0])
+        print(self.people.elector_residence_id)
 
     # Создание записи в таблице person.elector_change_log (история изменений УИПа)
     def createElector_change_log(self):
@@ -90,4 +99,13 @@ class workDB:
         self.conn.commit()
 
 
-db = workDB()
+# db = workDB()
+# db.openDB()
+# #db.createElector()
+# db.setElector_id()
+# #db.createElectorKind()
+# #db.createElector_doc()
+# db.setElector_doc_id()
+# #db.createElector_recidence()
+# #db.setElector_residence_id()
+# db.createElector_change_log()

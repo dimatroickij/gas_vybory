@@ -138,7 +138,7 @@ class UIP:
     def setElector_id(self, elector_id):
         self.elector_id = elector_id
 
-    def getElector_king(self):
+    def getElector_kind(self):
         return [self.sys_elector_id, self.start_date2, '[{"id": 1}]']
 
     def getElector_doc(self):
