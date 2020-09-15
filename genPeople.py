@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from mimesis import Person
 from mimesis.enums import Gender
 
+
 # таблица настройки, увеличенная до 150_000_000
 # count = 150_000_000
 # capacity = 110_000_000
@@ -29,11 +30,8 @@ from mimesis.enums import Gender
 def gen_datetime(ageMin, ageMax):
     start = datetime(2020 - ageMin, datetime.now().month, datetime.now().day, 00, 00, 00)
     end = datetime(2020 - ageMax - 1, datetime.now().month, datetime.now().day, 00, 00, 00) + timedelta(days=20)
-    # Проверить, почему вылетает ошибка при большой разнице возрастов
-    date3 = int(end.timestamp())
-    date2 = int(start.timestamp()) - date3
-    date1 = random.randint(0, date2)
-    return datetime.fromtimestamp(end.timestamp() + date1)
+    return end + timedelta(days=random.randint(0, (start - end).days))
+
 
 def gen_doc_issue_date(birth):
     age = int((datetime.now() - birth).days / 365.2425)
@@ -47,6 +45,7 @@ def gen_doc_issue_date(birth):
     else:
         return birth + timedelta(days=458365 + 12 + 15)  # 12 - возможное количество високосных годов
 
+
 def gen_doc_number(type):
     if type == 0:
         randSer2 = str(random.randint(1, 99))
@@ -55,7 +54,7 @@ def gen_doc_number(type):
         number = '0' * (6 - len(number)) + number
     elif type == 1:
         alphabet = 'АВЕКМНОРСТХ'
-        romanNum = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X']
+        romanNum = ['I', 'V', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X']
         number = str(random.randint(1, 999999))
         number = '0' * (6 - len(number)) + number
         series = romanNum[random.randint(0, 9)] + '-T' + alphabet[random.randint(0, 10)]
@@ -64,21 +63,23 @@ def gen_doc_number(type):
         series = ''
     return [series, number]
 
+
 class UIP:
-    def __init__(self, sys_elector_id, gender, ageMin, ageMax, capacity):
+    def __init__(self, sys_elector_id, gender, ageMin, ageMax, capacity, elector_id, elector_doc_id,
+                 elector_residence_id):
         # Словарь пола
         genderList = {1: Gender.MALE, 2: Gender.FEMALE}
         # Суффиксы отчества в зависимоти от пола
         genderSuffix = {1: 'ович', 2: 'овна'}
-        #Словарь типов документа
-        docList = {0:[10,9], 1:[123456789,5]}
+        # Словарь типов документа
+        docList = {0: [10, 9], 1: [123456789, 5]}
         person = Person('ru')
 
-        #Генерация даты рождения в завсимости от возраста
+        # Генерация даты рождения в завсимости от возраста
         birth = gen_datetime(ageMin, ageMax)
 
-        #Данные для таблицы elector
-        self.elector_id = None # PK из таблицы
+        # Данные для таблицы elector
+        self.elector_id = elector_id  # PK из таблицы, но будет устанавливаться вручную, при этом надо поддерживать соответствие с последовательностями из базы
         self.last_name = person.last_name(gender=genderList[gender])
         self.first_name = person.first_name(gender=genderList[gender])
         self.middle_name = person.first_name(gender=genderList[gender]) + genderSuffix[gender]
@@ -87,14 +88,14 @@ class UIP:
         self.gender_id = gender
         self.capacity_id = capacity
         self.country_id = 643
-        self.start_date = birth.strftime('%Y-%m-%d') + ' 00:00:00' #для таблицы elector
-        #НЕТ ИНФОРМАЦИИ О СПОСОБЕ ГЕНЕРАЦИИ ПОЛЯ (пока приходит готовое) sys_elector_id
+        self.start_date = birth.strftime('%Y-%m-%d') + ' 00:00:00'  # для таблицы elector
+        # НЕТ ИНФОРМАЦИИ О СПОСОБЕ ГЕНЕРАЦИИ ПОЛЯ (пока приходит готовое) sys_elector_id
         self.sys_elector_id = sys_elector_id
         self.address_id = 1
 
         # Данные для таблицы elector_doc
-        self.elector_doc_id = None # PK из таблицы
-        #НЕПОНЯТНО КАК МЕНЯТЬ (ТАК КАК У КАЖДОГО УИП СВОЕ МЕСТО ВЫДАЧИ ДОКУМЕНТА). Сейчас одинаковое значение:
+        self.elector_doc_id = elector_doc_id  # PK из таблицы, но будет устанавливаться вручную, при этом надо поддерживать соответствие с последовательностями из базы
+        # НЕПОНЯТНО КАК МЕНЯТЬ (ТАК КАК У КАЖДОГО УИП СВОЕ МЕСТО ВЫДАЧИ ДОКУМЕНТА). Сейчас одинаковое значение:
         self.subject_global_id = 123
 
         if ageMax < 14:
@@ -105,29 +106,29 @@ class UIP:
         doc_data = gen_doc_number(doc_code)
         self.elect_doc_series = doc_data[0]
         self.elect_doc_number = doc_data[1]
-        self.start_date2 = datetime.now().strftime('%Y-%m-%d %H:%M:%S') #для таблицы elector_doc
+        self.start_date2 = datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # для таблицы elector_doc
 
         self.elect_doc_issue_date = gen_doc_issue_date(birth).strftime('%Y-%m-%d')
         self.elector_doc_type_id = docList[doc_code][1]
 
         # Данные для таблицы elector_residence
-        self.elector_residence_id = None # PK из таблицы
+        self.elector_residence_id = elector_residence_id  # PK из таблицы
         self.elector_residence_kind_id = 1
-        #НЕПОНЯТНО КАК МЕНЯТЬ (ТАК КАК У КАЖДОГО УИП СВОЕ МЕСТО ЖИТЕЛЬСТВА). Сейчас постоянное значение
+        # НЕПОНЯТНО КАК МЕНЯТЬ (ТАК КАК У КАЖДОГО УИП СВОЕ МЕСТО ЖИТЕЛЬСТВА). Сейчас постоянное значение
         self.residence_address_id = 111111111
 
         # Данные для таблицы elector_change_log
-        #НЕИЗВЕСТНО ЗНАЧЕНИЕ, но вроде везде 1
+        # НЕИЗВЕСТНО ЗНАЧЕНИЕ, но вроде везде 1
         self.change_type_id = 1
         self.change_number = 0
-        self.change_date = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d %H:%M:%S')
-        self.change_basis_id = 89 # 89 - листок прибытия, 85 - рождение, 97 - листок убытия
+        self.change_date = self.birth_day + ' 00:00:00'
+        self.change_basis_id = 85  # 89 - листок прибытия, 85 - рождение, 97 - листок убытия
         self.kca = 1
-        #БУДЕТ БРАТЬСЯ ИЗ ID СОЗДАННОГО person: self.elector_id = ''
-        #БУДЕТ БРАТЬСЯ ИЗ ID СОЗДАННОГО документа self.elector_doc_id
-        #БУДЕТ БРАТЬСЯ ИЗ ID СОЗДАННОГО elector_residence self.elector_residence_id
+        # БУДЕТ БРАТЬСЯ ИЗ ID СОЗДАННОГО person: self.elector_id = ''
+        # БУДЕТ БРАТЬСЯ ИЗ ID СОЗДАННОГО документа self.elector_doc_id
+        # БУДЕТ БРАТЬСЯ ИЗ ID СОЗДАННОГО elector_residence self.elector_residence_id
 
-        #input_source = 1
+        # input_source = 1
         self.input_source = 1
 
     def getElector(self):
@@ -160,14 +161,3 @@ class UIP:
         return [self.elector_id, self.elector_doc_id, self.elector_residence_id, self.sys_elector_id,
                 self.change_type_id, self.change_number, self.change_date, self.start_date2, self.kca,
                 self.change_basis_id, self.input_source]
-
-# Нужно генерировать sys_elector_id; брать из БД subject_global_id, residence_address_id
-# people = UIP(sys_elector_id=123456789, gender=1, ageMin=18, ageMax=50, capacity=1)
-# print(people.getElector())
-# #people.setElector_id(123456)
-# print(people.getElector_king())
-# print(people.getElector_doc())
-# #people.setElector_doc_id('000000')
-# print(people.getElector_residence())
-# #people.setElector_residence_id()
-# print(people.getElector_change_log())

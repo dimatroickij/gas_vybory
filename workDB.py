@@ -8,11 +8,14 @@ from genPeople import UIP
 
 
 class workDB:
-    def __init__(self):
-        self.people = UIP(sys_elector_id=123456789, gender=1, ageMin=18, ageMax=20, capacity=1)
+    def __init__(self, gender, ageMin, ageMax, capacity, sys_elector_id, elector_id, elector_doc_id,
+                 elector_residence_id):
+        self.people = UIP(sys_elector_id=sys_elector_id, gender=gender, ageMin=ageMin, ageMax=ageMax, capacity=capacity,
+                          elector_id=elector_id, elector_doc_id=elector_doc_id,
+                          elector_residence_id=elector_residence_id)
 
     def openDB(self):
-        self.conn = psycopg2.connect(dbname='gas20dev', user='voshod', password='voshod', host='172.20.101.55')
+        self.conn = psycopg2.connect(dbname='gas20dev', user='voshod', password='voshod', host='172.20.101.40')
         self.cursor = self.conn.cursor()
 
     # Создание записи в таблице person.elector (таблица с УИП)
@@ -34,7 +37,6 @@ class workDB:
                             % self.people.sys_elector_id)
         for row in self.cursor:
             self.people.setElector_id(row[0])
-
 
     def createElectorKind(self):
         king = self.people.getElector_kind()
@@ -97,15 +99,13 @@ class workDB:
                              'elector_doc_id': change_log[1], 'elector_residence_id': change_log[2],
                              'kca': change_log[8], 'sys_elector_id': change_log[3]})
         self.conn.commit()
-
-
-# db = workDB()
+# gender=1, ageMin=18, ageMax=20, capacity=1
+# gender, ageMin, ageMax, capacity
+db = workDB(gender=1, ageMin=18, ageMax=20, capacity=1, sys_elector_id=4390883, elector_id=1419420,
+            elector_doc_id=1707943, elector_residence_id=1882795)
 # db.openDB()
-# #db.createElector()
-# db.setElector_id()
-# #db.createElectorKind()
-# #db.createElector_doc()
-# db.setElector_doc_id()
-# #db.createElector_recidence()
-# #db.setElector_residence_id()
+# db.createElector()
+# db.createElectorKind()
+# db.createElector_doc()
+# db.createElector_recidence()
 # db.createElector_change_log()
