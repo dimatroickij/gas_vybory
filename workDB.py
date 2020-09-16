@@ -103,7 +103,13 @@ class workDB:
 # gender, ageMin, ageMax, capacity
 db = workDB(gender=1, ageMin=18, ageMax=20, capacity=1, sys_elector_id=4390883, elector_id=1419420,
             elector_doc_id=1707943, elector_residence_id=1882795)
-# db.openDB()
+# def gen_datetime(ageMin, ageMax):
+#     start = datetime(2020 - ageMin, datetime.now().month, datetime.now().day, 00, 00, 00)
+#     end = datetime(2020 - ageMax - 1, datetime.now().month, datetime.now().day, 00, 00, 00) + timedelta(days=20)
+#     return end + timedelta(days=random.randint(0, (start - end).days))def gen_datetime(ageMin, ageMax):
+#     start = datetime(2020 - ageMin, datetime.now().month, datetime.now().day, 00, 00, 00)
+#     end = datetime(2020 - ageMax - 1, datetime.now().month, datetime.now().day, 00, 00, 00) + timedelta(days=20)
+#     return end + timedelta(days=random.randint(0, (start - end).days))db.openDB()
 # db.createElector()
 # db.createElectorKind()
 # db.createElector_doc()
