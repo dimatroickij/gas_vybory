@@ -8,14 +8,19 @@ from genPeople import UIP
 
 
 class workDB:
-    def __init__(self, gender, ageMin, ageMax, capacity, sys_elector_id, elector_id, elector_doc_id,
-                 elector_residence_id):
-        self.people = UIP(sys_elector_id=sys_elector_id, gender=gender, ageMin=ageMin, ageMax=ageMax, capacity=capacity,
-                          elector_id=elector_id, elector_doc_id=elector_doc_id,
-                          elector_residence_id=elector_residence_id)
+    # def __init__(self, gender, ageMin, ageMax, capacity, sys_elector_id, elector_id, elector_doc_id,
+    #              elector_residence_id, residence_address_id):
+    #     self.people = UIP(sys_elector_id=sys_elector_id, gender=gender, ageMin=ageMin, ageMax=ageMax, capacity=capacity,
+    #                       elector_id=elector_id, elector_doc_id=elector_doc_id,
+    #                       elector_residence_id=elector_residence_id, residence_address_id=residence_address_id)
+    def __init__(self):
+        pass
+
+    def set_people(self, people):
+        self.people = people
 
     def openDB(self):
-        self.conn = psycopg2.connect(dbname='gas20dev', user='voshod', password='voshod', host='172.20.101.40')
+        self.conn = psycopg2.connect(dbname='gas20dev_nt', user='voshod', password='voshod', host='172.20.101.40')
         self.cursor = self.conn.cursor()
 
     # Создание записи в таблице person.elector (таблица с УИП)
@@ -48,7 +53,7 @@ class workDB:
     # Создание записи в таблице person.elector_doc (данные документа УИПа)
     def createElector_doc(self):
         doc = self.people.getElector_doc()
-        self.cursor.execute("""insert into person.elector_doc (subject_id, elector_doc_code_id, elect_doc_series, 
+        self.cursor.execute("""insert into person.elector_doc (subject_global_id, elector_doc_code_id, elect_doc_series, 
                             elect_doc_number, input_source_id, start_date, elect_doc_issue_date, elector_doc_type_id, 
                             sys_elector_id) values (%(subject_id)s, %(elector_doc_code_id)s, %(elect_doc_series)s, 
                             %(elect_doc_number)s, %(input_source)s, %(start_date)s, %(elect_doc_issue_date)s,
@@ -63,7 +68,7 @@ class workDB:
                             'where sys_elector_id = %s' % self.people.sys_elector_id)
         for row in self.cursor:
             self.people.setElector_doc_id(row[0])
-        print(self.people.elector_doc_id)
+        #print(self.people.elector_doc_id)
 
     # Создание записи в таблице person.elector_residence (данные о месте жительства)
     def createElector_recidence(self):
@@ -82,7 +87,7 @@ class workDB:
                             'where sys_elector_id = %s' % self.people.sys_elector_id)
         for row in self.cursor:
             self.people.setElector_residence_id(row[0])
-        print(self.people.elector_residence_id)
+        #print(self.people.elector_residence_id)
 
     # Создание записи в таблице person.elector_change_log (история изменений УИПа)
     def createElector_change_log(self):
@@ -101,17 +106,28 @@ class workDB:
         self.conn.commit()
 # gender=1, ageMin=18, ageMax=20, capacity=1
 # gender, ageMin, ageMax, capacity
-db = workDB(gender=1, ageMin=18, ageMax=20, capacity=1, sys_elector_id=4390883, elector_id=1419420,
-            elector_doc_id=1707943, elector_residence_id=1882795)
-# def gen_datetime(ageMin, ageMax):
-#     start = datetime(2020 - ageMin, datetime.now().month, datetime.now().day, 00, 00, 00)
-#     end = datetime(2020 - ageMax - 1, datetime.now().month, datetime.now().day, 00, 00, 00) + timedelta(days=20)
-#     return end + timedelta(days=random.randint(0, (start - end).days))def gen_datetime(ageMin, ageMax):
-#     start = datetime(2020 - ageMin, datetime.now().month, datetime.now().day, 00, 00, 00)
-#     end = datetime(2020 - ageMax - 1, datetime.now().month, datetime.now().day, 00, 00, 00) + timedelta(days=20)
-#     return end + timedelta(days=random.randint(0, (start - end).days))db.openDB()
-# db.createElector()
-# db.createElectorKind()
-# db.createElector_doc()
-# db.createElector_recidence()
-# db.createElector_change_log()
+
+#print(db.people.sys_elector_id)
+db = workDB()
+db.openDB()
+for i in range(1, 1000):
+    print('%i / 99' % i)
+    # def __init__(self, gender, ageMin, ageMax, capacity, sys_elector_id, elector_id, elector_doc_id,
+    #              elector_residence_id, residence_address_id):
+    #     self.people = UIP(sys_elector_id=sys_elector_id, gender=gender, ageMin=ageMin, ageMax=ageMax, capacity=capacity,
+    #                       elector_id=elector_id, elector_doc_id=elector_doc_id,
+    #                       elector_residence_id=elector_residence_id, residence_address_id=residence_address_id)
+    people = UIP(gender=1, ageMin=18, ageMax=20, capacity=1, sys_elector_id=7778513 + i, elector_id=2089257,
+                 elector_doc_id=5900, elector_residence_id=13723, residence_address_id=144082079413834240000345981)
+    db.set_people(people)
+    # db = workDB(gender=1, ageMin=18, ageMax=20, capacity=1, sys_elector_id=7777813 + i, elector_id=2089257,
+    #             elector_doc_id=5900, elector_residence_id=13723, residence_address_id=144082079413834240000345981)
+
+    db.createElector()
+    db.setElector_id()
+    db.createElectorKind()
+    db.createElector_doc()
+    db.setElector_doc_id()
+    db.createElector_recidence()
+    db.setElector_residence_id()
+    db.createElector_change_log()

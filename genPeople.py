@@ -66,7 +66,7 @@ def gen_doc_number(type):
 
 class UIP:
     def __init__(self, sys_elector_id, gender, ageMin, ageMax, capacity, elector_id, elector_doc_id,
-                 elector_residence_id):
+                 elector_residence_id, residence_address_id):
         # Словарь пола
         genderList = {1: Gender.MALE, 2: Gender.FEMALE}
         # Суффиксы отчества в зависимоти от пола
@@ -115,7 +115,7 @@ class UIP:
         self.elector_residence_id = elector_residence_id  # PK из таблицы
         self.elector_residence_kind_id = 1
         # НЕПОНЯТНО КАК МЕНЯТЬ (ТАК КАК У КАЖДОГО УИП СВОЕ МЕСТО ЖИТЕЛЬСТВА). Сейчас постоянное значение
-        self.residence_address_id = 111111111
+        self.residence_address_id = residence_address_id
 
         # Данные для таблицы elector_change_log
         # НЕИЗВЕСТНО ЗНАЧЕНИЕ, но вроде везде 1
