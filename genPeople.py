@@ -1,8 +1,7 @@
+import gc
+import json
 import random
 from datetime import datetime, timedelta
-
-from mimesis import Person
-from mimesis.enums import Gender
 
 
 # таблица настройки, увеличенная до 150_000_000
@@ -63,26 +62,34 @@ def gen_doc_number(type):
         series = ''
     return [series, number]
 
-
 class UIP:
+    def gen_name(self, sex):
+        return random.choice(self.data['names'][sex])
+
+    def gen_surname(self, sex):
+        return random.choice(self.data['surnames'][sex])
+
     def __init__(self, sys_elector_id, gender, ageMin, ageMax, capacity, elector_id, elector_doc_id,
                  elector_residence_id, residence_address_id):
+        self.data = None
+        with open("person.json", "r", encoding='UTF-8') as read_file:
+            self.data = json.load(read_file)
+
         # Словарь пола
-        genderList = {1: Gender.MALE, 2: Gender.FEMALE}
+        genderList = {1: 'male', 2: 'female'}
         # Суффиксы отчества в зависимоти от пола
         genderSuffix = {1: 'ович', 2: 'овна'}
         # Словарь типов документа
         docList = {0: [10, 9], 1: [123456789, 5]}
-        person = Person('ru')
 
         # Генерация даты рождения в завсимости от возраста
         birth = gen_datetime(ageMin, ageMax)
 
         # Данные для таблицы elector
         self.elector_id = elector_id  # PK из таблицы, но будет устанавливаться вручную, при этом надо поддерживать соответствие с последовательностями из базы
-        self.last_name = person.last_name(gender=genderList[gender])
-        self.first_name = person.first_name(gender=genderList[gender])
-        self.middle_name = person.first_name(gender=genderList[gender]) + genderSuffix[gender]
+        self.last_name = self.gen_surname(genderList[gender])
+        self.first_name = self.gen_name(genderList[gender])
+        self.middle_name = self.gen_name(genderList[gender]) + genderSuffix[gender]
         self.birth_day = birth.strftime('%Y-%m-%d')
         self.birth_day_string = birth.strftime('%Y.%m.%d')
         self.gender_id = gender
@@ -136,11 +143,20 @@ class UIP:
                 self.gender_id, self.capacity_id, self.country_id, self.start_date, self.input_source,
                 self.sys_elector_id, self.address_id]
 
+    def getElector_file(self):
+        return [str(self.elector_id), str(self.sys_elector_id), self.last_name, self.first_name, self.middle_name,
+                self.birth_day, self.birth_day_string, 'f', str(self.gender_id), str(self.capacity_id),
+                str(self.address_id), str(self.country_id), None, None, self.start_date, None, str(self.input_source),
+                't', None, '']
+
     def setElector_id(self, elector_id):
         self.elector_id = elector_id
 
     def getElector_kind(self):
         return [self.sys_elector_id, self.start_date2, '[{"id": 1}]']
+
+    def getElector_kind_file(self):
+        return [str(self.sys_elector_id), self.start_date2, '[{"id": 1}]']
 
     def getElector_doc(self):
         return [self.sys_elector_id, self.subject_global_id, self.elector_doc_code_id, self.elect_doc_series,
