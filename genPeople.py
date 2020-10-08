@@ -173,7 +173,7 @@ class UIP:
             romanNum = ['I', 'V', 'L', 'X', 'C']
             number = str(random.randint(1, 999999))
             number = '0' * (6 - len(number)) + number
-            series = romanNum[random.randint(0, 5)] + '-Т' + alphabet[random.randint(0, 10)]
+            series = romanNum[random.randint(0, 5)] + '-' + alphabet[random.randint(0, 10)] + alphabet[random.randint(0, 10)]
         else:
             number = ''
             series = ''
