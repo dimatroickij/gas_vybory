@@ -1,3 +1,4 @@
+import csv
 import json
 import random
 from datetime import datetime, timedelta
@@ -27,64 +28,36 @@ from datetime import datetime, timedelta
 
 
 class UIP:
-    def gen_datetime(self, ageMin, ageMax):
-        start = datetime(2020 - ageMin, datetime.now().month, datetime.now().day, 00, 00, 00)
-        end = datetime(2020 - ageMax - 1, datetime.now().month, datetime.now().day, 00, 00, 00) + timedelta(days=20)
-        return end + timedelta(days=random.randint(0, (start - end).days))
-
-    def gen_doc_issue_date(self, birth):
-        age = int((datetime.now() - birth).days / 365.2425)
-
-        if age < 14:
-            return birth + timedelta(days=10)
-        elif age >= 14 and age < 20:
-            return birth + timedelta(days=14 * 365 + 4 + 15)  # 4 - возможное количество високосных годов
-        elif age >= 20 and age < 45:
-            return birth + timedelta(days=20 * 365 + 5 + 15)  # 5 - возможное количество високосных годов
-        else:
-            return birth + timedelta(days=458365 + 12 + 15)  # 12 - возможное количество високосных годов
-
-    def gen_doc_number(srlf, type):
-        if type == 0:
-            randSer2 = str(random.randint(1, 99))
-            series = str(random.randint(10, 80)) + ' ' + '0' * (2 - len(randSer2)) + randSer2
-            number = str(random.randint(1, 999999))
-            number = '0' * (6 - len(number)) + number
-        elif type == 1:
-            alphabet = 'АВЕКМНОРСТХ'
-            romanNum = ['I', 'V', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X']
-            number = str(random.randint(1, 999999))
-            number = '0' * (6 - len(number)) + number
-            series = romanNum[random.randint(0, 9)] + '-T' + alphabet[random.randint(0, 10)]
-        else:
-            number = ''
-            series = ''
-        return [str(series), str(number)]
-
-    def gen_name(self, sex):
-        return random.choice(self.data['names'][sex])
-
-    def gen_surname(self, sex):
-        return random.choice(self.data['surnames'][sex])
-
-    def __init__(self, sys_elector_id, gender, ageMin, ageMax, capacity, elector_id, elector_doc_id, address_id,
-                 elector_residence_id, residence_address_id, elector_change_log_id, elector_kind_id):
+    def __init__(self, sys_elector_id, gender, ageMin, ageMax, capacity, elector_id, elector_doc_id,
+                 elector_residence_id, elector_change_log_id, elector_kind_id):
         self.data = None
         with open("person.json", "r", encoding='UTF-8') as read_file:
             self.data = json.load(read_file)
+
+        # Список адресов регистрации
+        self.residence = None
+        with open("residence_id.csv", "r", encoding='UTF-8') as read_file:
+            residence = csv.reader(read_file, delimiter='|')
+            self.residence = list(residence)[0]
+
+        # Список мест выдачи паспорта
+        self.subject = None
+        with open("subject_id.json", "r", encoding='UTF-8') as subject_file:
+            self.subject = json.load(subject_file)
 
         # Словарь пола
         genderList = {1: 'male', 2: 'female'}
         # Суффиксы отчества в зависимоти от пола
         genderSuffix = {1: 'ович', 2: 'овна'}
         # Словарь типов документа
-        docList = {0: ['10', '9'], 1: ['123456789', '5']}
+        docList = {0: ['10', '9'], 1: [None, '5']}
 
         # Генерация даты рождения в завсимости от возраста
         birth = self.gen_datetime(ageMin, ageMax)
 
         # Данные для таблицы elector
-        self.elector_id = elector_id  # PK из таблицы, но будет устанавливаться вручную, при этом надо поддерживать соответствие с последовательностями из базы
+        # PK из таблицы, но будет устанавливаться вручную, при этом надо поддерживать соответствие с последовательностями из базы
+        self.elector_id = elector_id
         self.sys_elector_id = sys_elector_id  # НЕТ ИНФОРМАЦИИ О СПОСОБЕ ГЕНЕРАЦИИ ПОЛЯ (пока приходит готовое) sys_elector_id
         self.last_name = self.gen_surname(genderList[gender])
         self.first_name = self.gen_name(genderList[gender])
@@ -95,11 +68,11 @@ class UIP:
         self.gender_id = gender
         self.capacity_id = capacity
         self.address_id = 1
-        self.country_id = '643'
+        self.country_id = 643
         self.snils = self.inn = None
         self.start_date = birth.strftime('%Y-%m-%d') + ' 00:00:00'  # для таблицы elector
         self.end_date = None
-        self.input_source = '1'
+        self.input_source = 1
         self.is_actual = True
         self.kca = 1
         self.capacity_actual_date = None
@@ -114,11 +87,11 @@ class UIP:
         # Данные для таблицы elector_doc
         self.elector_doc_id = elector_doc_id  # надо поддерживать соответствие с последовательностями из базы
         # sys_elector_id
-        self.subject_global_id = 123  # НЕПОНЯТНО КАК МЕНЯТЬ (ТАК КАК У КАЖДОГО УИП СВОЕ МЕСТО ВЫДАЧИ ДОКУМЕНТА)
         if ageMax < 14:
             doc_code = 1
         else:
             doc_code = 0
+        self.subject_global_id = random.choice(self.subject[str(doc_code)])
         self.elector_doc_code_id = docList[doc_code][0]
         doc_data = self.gen_doc_number(doc_code)
         self.elect_doc_series = doc_data[0]
@@ -134,8 +107,7 @@ class UIP:
         # Данные для таблицы elector_residence
         self.elector_residence_id = elector_residence_id  # PK из таблицы
         # sys_elector_id
-        # НЕПОНЯТНО КАК МЕНЯТЬ (ТАК КАК У КАЖДОГО УИП СВОЕ МЕСТО ЖИТЕЛЬСТВА). Сейчас постоянное значение
-        self.residence_address_id = residence_address_id
+        self.residence_address_id = random.choice(self.residence)
         self.arrival_address_id = self.departure_address_id = self.temp_start_date = self.temp_end_date = None
         # input_source
         self.elector_residence_kind_id = 1
@@ -147,7 +119,6 @@ class UIP:
         self.is_create_arrive_needed = False
 
         # Данные для таблицы elector_change_log
-        # НЕИЗВЕСТНО ЗНАЧЕНИЕ, но вроде везде 1
         self.elector_change_log_id = elector_change_log_id
         # elector_id
         # elector_doc_id
@@ -173,6 +144,69 @@ class UIP:
         self.is_departured_from_addr = False
         self.is_departured_in_prison = False
         self.kind_names = 'избиратель'
+
+    def gen_datetime(self, ageMin, ageMax):
+        start = datetime(2020 - ageMin, datetime.now().month, datetime.now().day, 00, 00, 00)
+        end = datetime(2020 - ageMax - 1, datetime.now().month, datetime.now().day, 00, 00, 00) + timedelta(days=20)
+        return end + timedelta(days=random.randint(0, (start - end).days))
+
+    def gen_doc_issue_date(self, birth):
+        age = int((datetime.now() - birth).days / 365.2425)
+
+        if age < 14:
+            return birth + timedelta(days=10)
+        elif age >= 14 and age < 20:
+            return birth + timedelta(days=14 * 365 + 4 + 15)  # 4 - возможное количество високосных годов
+        elif age >= 20 and age < 45:
+            return birth + timedelta(days=20 * 365 + 5 + 15)  # 5 - возможное количество високосных годов
+        else:
+            return birth + timedelta(days=458365 + 12 + 15)  # 12 - возможное количество високосных годов
+
+    def gen_doc_number(srlf, type):
+        if type == 0:
+            randSer2 = str(random.randint(1, 99))
+            series = str(random.randint(10, 80)) + ' ' + '0' * (2 - len(randSer2)) + randSer2
+            number = str(random.randint(1, 999999))
+            number = '0' * (6 - len(number)) + number
+        elif type == 1:
+            alphabet = 'АВЕКМНОРСТХ'
+            romanNum = ['I', 'V', 'L', 'X', 'C']
+            number = str(random.randint(1, 999999))
+            number = '0' * (6 - len(number)) + number
+            series = romanNum[random.randint(0, 5)] + '-T' + alphabet[random.randint(0, 10)]
+        else:
+            number = ''
+            series = ''
+        return [str(series), str(number)]
+
+    def gen_name(self, sex):
+        return random.choice(self.data['names'][sex])
+
+    def gen_surname(self, sex):
+        return random.choice(self.data['surnames'][sex])
+
+    def genResidenceAddressFile(self):
+        keys = []
+        with open('address.csv', 'r', encoding='UTF-8') as address_file:
+            csv_people = csv.reader(address_file, delimiter='|')
+            for row in csv_people:
+                if row[5] == '11':
+                    keys.append(row[0])
+        with open('residence_id.csv', 'w', encoding='UTF-8') as residence_id_file:
+            csv_residence_file = csv.writer(residence_id_file, delimiter='|')
+            csv_residence_file.writerow(keys)
+
+    def genSubjectIdFile(self):
+        keys = {0: [], 1: []}
+        with open('subject.csv', 'r', encoding='UTF-8') as subject_file:
+            csv_subject = csv.reader(subject_file, delimiter='|')
+            for row in csv_subject:
+                if int(row[7]) in [2, 9, 100]:
+                    keys[0].append(row[1])
+                elif int(row[7]) == 3:
+                    keys[1].append(row[1])
+        with open('subject_id.json', 'w', encoding='UTF-8') as subject_id_file:
+            json.dump(keys, subject_id_file)
 
     def getElector(self):
         return [self.elector_id, self.sys_elector_id, self.last_name, self.first_name, self.middle_name,

@@ -1,36 +1,66 @@
 import csv
+import json
 from datetime import datetime
+from multiprocessing import Process
+from threading import Thread
 
 from genPeople import UIP
 
-count = 10
-date_start = datetime.now().timestamp()
-with open('D:\\elector.csv', "w", newline='', encoding='UTF-8') as people_file:
-    with open('D:\\elector_kind.csv', "w", newline='', encoding='UTF-8') as kind_file:
-        with open('D:\\elector_doc.csv', "w", newline='', encoding='UTF-8') as doc_file:
-            with open('D:\\elector_residence.csv', "w", newline='', encoding='UTF-8') as residence_file:
-                with open('D:\\elector_change_log.csv', "w", newline='', encoding='UTF-8') as change_log_file:
-                    csv_people = csv.writer(people_file, delimiter='|')
-                    csv_kind = csv.writer(kind_file, delimiter='|')
-                    csv_doc = csv.writer(doc_file, delimiter='|')
-                    csv_residence = csv.writer(residence_file, delimiter='|')
-                    csv_change_log = csv.writer(change_log_file, delimiter='|')
 
-                    for i in range(1, count + 1):
-                        people = UIP(gender=1, ageMin=18, ageMax=20, capacity=1, sys_elector_id=77786132 + i,
-                                     elector_id=22892527 + i, elector_change_log_id = 7662 + i,
-                                     elector_kind_id = 6450 + i, elector_doc_id=62000 + i,
-                                     elector_residence_id=222723 + i, residence_address_id=144082079413834240000345981,
-                                     address_id=1)
-                        csv_people.writerow(people.getElector())
-                        #[self.elector_kind_id, self.sys_elector_id, self.create_date, self.elector_kinds_json,
-                #self.has_external_vision]
-                        # kind_file.write(str(people.elector_kind_id) + '|' + str(people.sys_elector_id) + '|' +
-                        #                 people.create_date + '|' + people.elector_kinds_json + '|' +
-                        #                 str(people.has_external_vision) + '\n')
-                        csv_kind.writerow(people.getElector_kind())
-                        csv_doc.writerow(people.getElector_doc())
-                        csv_residence.writerow(people.getElector_residence())
-                        csv_change_log.writerow(people.getElector_change_log())
+def saveFile(count, number):
+    print('start %s' % number)
+    for i in range(1, count + 1):
+        with open('D:\\genFileGAS_Vybory\elector%s.csv' % number, "a", newline='', encoding='UTF-8') as people_file:
+            with open('D:\\genFileGAS_Vybory\elector_kind%s.csv' % number, "a", newline='',
+                      encoding='UTF-8') as kind_file:
+                with open('D:\\genFileGAS_Vybory\elector_doc%s.csv' % number, "a", newline='',
+                          encoding='UTF-8') as doc_file:
+                    with open('D:\\genFileGAS_Vybory\elector_residence%s.csv' % number, "a", newline='',
+                              encoding='UTF-8') as residence_file:
+                        with open('D:\\genFileGAS_Vybory\elector_change_log%s.csv' % number, "a", newline='',
+                                  encoding='UTF-8') as change_log_file:
+                            csv_people = csv.writer(people_file, delimiter='|')
+                            csv_kind = csv.writer(kind_file, delimiter='|')
+                            csv_doc = csv.writer(doc_file, delimiter='|')
+                            csv_residence = csv.writer(residence_file, delimiter='|')
+                            csv_change_log = csv.writer(change_log_file, delimiter='|')
 
-print((datetime.now().timestamp() - date_start))
+                            people = UIP(gender=1, ageMin=10, ageMax=13, capacity=1, sys_elector_id=77786132 + i,
+                                         elector_id=22892527 + i, elector_change_log_id=7662 + i,
+                                         elector_kind_id=6450 + i, elector_doc_id=62000 + i,
+                                         elector_residence_id=222723 + i)
+
+                            print(people.getElector())
+                            print(people.getElector_kind())
+                            print(people.getElector_doc())
+                            print(people.getElector_residence())
+                            print(people.getElector_change_log())
+
+                            csv_people.writerow(people.getElector())
+                            csv_kind.writerow(people.getElector_kind())
+                            csv_doc.writerow(people.getElector_doc())
+                            csv_residence.writerow(people.getElector_residence())
+                            csv_change_log.writerow(people.getElector_change_log())
+    print('end process %s' % number)
+
+
+
+if __name__ == '__main__':
+    count = 1
+    countProcess = 1
+
+    startWork = datetime.now().timestamp()
+    procs = []
+    for i in range(1, countProcess + 1):
+        proc = Process(target=saveFile, args=(count, '%i' % i))
+        procs.append(proc)
+        proc.start()
+
+    for proc in procs:
+        proc.join()
+
+    total = count * countProcess  / (datetime.now().timestamp() - startWork)
+    avgHour = 150_000_000 / total / 60/ 60
+    avgDay = avgHour / 24
+    print('Средняя скорость создания записей: %f в секунду' % total)
+    print('Среднее время создания 150_000_000 записей: %f часов или %f дней' % (avgHour, avgDay))
