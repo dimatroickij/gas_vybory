@@ -29,14 +29,11 @@ from datetime import datetime, timedelta
 
 class UIP:
     def __init__(self, sys_elector_id, ageMin, ageMax, capacity, elector_id, elector_doc_id, elector_residence_id,
-                 elector_change_log_id, elector_kind_id, peopleFile, residenceFile, subjectFile):
+                 elector_change_log_id, elector_kind_id, peopleFile, residenceFile):
         self.peopleFile = peopleFile
 
         # Список адресов регистрации
         self.residence = residenceFile
-
-        # Список мест выдачи паспорта
-        self.subject = subjectFile
 
         # Словарь пола
         genderList = {1: 'male', 2: 'female'}
@@ -89,7 +86,7 @@ class UIP:
             doc_code = 1
         else:
             doc_code = 0
-        self.subject_global_id = random.choice(self.subject[str(doc_code)])
+        self.subject_global_id = 1000003
         self.elector_doc_code_id = docList[doc_code][0]
         doc_data = self.gen_doc_number(doc_code)
         self.elect_doc_series = doc_data[0]
@@ -146,7 +143,6 @@ class UIP:
         self.is_valid_ukd = False
         self.is_trusted = False
 
-
     def gen_datetime(self, ageMin, ageMax):
         start = datetime(2020 - ageMin, datetime.now().month, datetime.now().day, 00, 00, 00)
         end = datetime(2020 - ageMax - 1, datetime.now().month, datetime.now().day, 00, 00, 00) + timedelta(days=20)
@@ -187,29 +183,6 @@ class UIP:
 
     def gen_surname(self, sex):
         return random.choice(self.peopleFile['surnames'][sex])
-
-    def genResidenceAddressFile(self):
-        keys = []
-        with open('address.csv', 'r', encoding='UTF-8') as address_file:
-            csv_people = csv.reader(address_file, delimiter='|')
-            for row in csv_people:
-                if row[5] == '11':
-                    keys.append(row[0])
-        with open('residence_id.csv', 'w', encoding='UTF-8') as residence_id_file:
-            csv_residence_file = csv.writer(residence_id_file, delimiter='|')
-            csv_residence_file.writerow(keys)
-
-    def genSubjectIdFile(self):
-        keys = {0: [], 1: []}
-        with open('subject.csv', 'r', encoding='UTF-8') as subject_file:
-            csv_subject = csv.reader(subject_file, delimiter='|')
-            for row in csv_subject:
-                if int(row[7]) in [2, 9, 100]:
-                    keys[0].append(row[1])
-                elif int(row[7]) == 3:
-                    keys[1].append(row[1])
-        with open('subject_id.json', 'w', encoding='UTF-8') as subject_id_file:
-            json.dump(keys, subject_id_file)
 
     def getElector(self):
         return [self.last_name, self.first_name, self.middle_name, self.birth_day, self.birth_day_string,

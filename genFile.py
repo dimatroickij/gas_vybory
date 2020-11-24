@@ -16,9 +16,9 @@ def saveFile(count, number):
         residence = csv.reader(read_file, delimiter='|')
         residenceFile = list(residence)[0]
 
-    subjectFile = None
-    with open("subject_id.json", "r", encoding='UTF-8') as read_file:
-        subjectFile = json.load(read_file)
+    # subjectFile = None
+    # with open("subject_id.json", "r", encoding='UTF-8') as read_file:
+    #     subjectFile = json.load(read_file)
 
     for i in range(1, count + 1):
         with open('D:\\genFileGAS_Vybory\elector%s.csv' % number, "a", newline='', encoding='UTF-8') as people_file:
@@ -40,7 +40,7 @@ def saveFile(count, number):
                                          elector_id=22892527 + i, elector_change_log_id=7662 + i,
                                          elector_kind_id=6450 + i, elector_doc_id=62000 + i,
                                          elector_residence_id=222723 + i, peopleFile=peopleFile,
-                                         residenceFile=residenceFile, subjectFile=subjectFile)
+                                         residenceFile=residenceFile)
 
                             # print(people.getElector())
                             # print(people.getElector_kind())
