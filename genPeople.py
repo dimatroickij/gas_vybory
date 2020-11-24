@@ -59,8 +59,8 @@ class UIP:
         self.is_birth_day_year_only = False
         self.gender_id = gender
         self.capacity_id = capacity
-        self.address_id = 1
-        self.country_id = 643
+        self.address_id = 1 # Россия
+        self.country_id = 643 # Россия
         self.snils = self.inn = None
         self.start_date = birth.strftime('%Y-%m-%d') + ' 00:00:00'  # для таблицы elector
         self.end_date = None

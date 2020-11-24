@@ -57,8 +57,8 @@ def saveFile(count, number):
 
 
 if __name__ == '__main__':
-    count = 10_000
-    countProcess = 3
+    count = 10
+    countProcess = 1
 
     startWork = datetime.now().timestamp()
     procs = []

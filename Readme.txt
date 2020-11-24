@@ -1,2 +1,9 @@
-Структура файла subject_passport.csv
-subject_id|is_actual|begin_date|end_date|subject_name|subject_type_id|subject_level_id|municipal_type|election_level|subject_rf_id|is_unchecked|is_protected|create_date|create_user_id|update_date|update_user_id|kca|subject_full_name|lvl|left_count|right_count|subject_code|subject_global_id|subject_global_parent_id|election_company_name_id
+Порядок загрузки и генерации данных:
+1) В таблицу nsi.subject экспортировать файл subject_passport.csv с разделителем |
+2) Импортировать таблицу admin.address через pgAdmin с разделителем |, назвать файл address.csv
+3) Запустить скрипт generateData.genResidenceAddressFile()
+4) Импортировать таблицу nsi.subject_rf через pgAdmin с разделителем |, назвать файл subject_rf.csv
+5) Запустить скрипт
+
+
+В файле elector_king.csv заменить |"[{""id"": 1}]"| на |"[{'"id'": 1}]"|
