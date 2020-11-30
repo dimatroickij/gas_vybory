@@ -12,7 +12,7 @@ def saveFile(count, number):
         peopleFile = json.load(read_file)
 
     residenceFile = None
-    with open("residence_id.csv", "r", encoding='UTF-8') as read_file:
+    with open("data/residence_id.csv", "r", encoding='UTF-8') as read_file:
         residence = csv.reader(read_file, delimiter='|')
         residenceFile = list(residence)[0]
 
@@ -57,7 +57,7 @@ def saveFile(count, number):
 
 
 if __name__ == '__main__':
-    count = 100
+    count = 10000
     countProcess = 1
 
     startWork = datetime.now().timestamp()
