@@ -29,11 +29,13 @@ from datetime import datetime, timedelta
 
 class UIP:
     def __init__(self, sys_elector_id, ageMin, ageMax, capacity, elector_id, elector_doc_id, elector_residence_id,
-                 elector_change_log_id, elector_kind_id, peopleFile, residenceFile):
+                 elector_change_log_id, elector_kind_id, peopleFile, residenceFile, ik_id_arrayFile):
         self.peopleFile = peopleFile
 
         # Список адресов регистрации
         self.residence = residenceFile
+
+        self.ik_id_arrayFile = ik_id_arrayFile
 
         # Словарь пола
         genderList = {1: 'male', 2: 'female'}
@@ -69,7 +71,8 @@ class UIP:
         self.kca = 1
         self.capacity_actual_date = None
         self.imanid = None
-        self.ik_id_array = None
+        self.ik_id_array = str(random.choice(self.ik_id_arrayFile)['ik_id_array']).replace(' ', '').replace('[', '{')\
+            .replace(']', '}')
         self.is_public_version = False
 
         # Данные для таблицы elector_kind

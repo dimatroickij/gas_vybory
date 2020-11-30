@@ -8,7 +8,7 @@ from genPeople import UIP
 def saveFile(count, number):
     print('start %s' % number)
     peopleFile = None
-    with open("person.json", "r", encoding='UTF-8') as read_file:
+    with open("data/person.json", "r", encoding='UTF-8') as read_file:
         peopleFile = json.load(read_file)
 
     residenceFile = None
@@ -16,19 +16,19 @@ def saveFile(count, number):
         residence = csv.reader(read_file, delimiter='|')
         residenceFile = list(residence)[0]
 
-    # subjectFile = None
-    # with open("subject_id.json", "r", encoding='UTF-8') as read_file:
-    #     subjectFile = json.load(read_file)
+    ik_id_arrayFile = None
+    with open("data/ik_id_array.json", "r", encoding='UTF-8') as read_file:
+        ik_id_arrayFile = json.load(read_file)
 
     for i in range(1, count + 1):
-        with open('D:\\genFileGAS_Vybory\elector%s.csv' % number, "a", newline='', encoding='UTF-8') as people_file:
-            with open('D:\\genFileGAS_Vybory\elector_kind%s.csv' % number, "a", newline='',
+        with open('F:\\genFileGAS_Vybory\elector%s.csv' % number, "a", newline='', encoding='UTF-8') as people_file:
+            with open('F:\\genFileGAS_Vybory\elector_kind%s.csv' % number, "a", newline='',
                       encoding='UTF-8') as kind_file:
-                with open('D:\\genFileGAS_Vybory\elector_doc%s.csv' % number, "a", newline='',
+                with open('F:\\genFileGAS_Vybory\elector_doc%s.csv' % number, "a", newline='',
                           encoding='UTF-8') as doc_file:
-                    with open('D:\\genFileGAS_Vybory\elector_residence%s.csv' % number, "a", newline='',
+                    with open('F:\\genFileGAS_Vybory\elector_residence%s.csv' % number, "a", newline='',
                               encoding='UTF-8') as residence_file:
-                        with open('D:\\genFileGAS_Vybory\elector_change_log%s.csv' % number, "a", newline='',
+                        with open('F:\\genFileGAS_Vybory\elector_change_log%s.csv' % number, "a", newline='',
                                   encoding='UTF-8') as change_log_file:
                             csv_people = csv.writer(people_file, delimiter='|')
                             csv_kind = csv.writer(kind_file, delimiter='|')
@@ -38,9 +38,9 @@ def saveFile(count, number):
 
                             people = UIP(ageMin=18, ageMax=80, capacity=1, sys_elector_id=77786132 + i,
                                          elector_id=22892527 + i, elector_change_log_id=7662 + i,
-                                         elector_kind_id=6450 + i, elector_doc_id=62000 + i,
+                                         elector_kind_id=64500 + i, elector_doc_id=62000 + i,
                                          elector_residence_id=222723 + i, peopleFile=peopleFile,
-                                         residenceFile=residenceFile)
+                                         residenceFile=residenceFile, ik_id_arrayFile=ik_id_arrayFile)
 
                             # print(people.getElector())
                             # print(people.getElector_kind())
@@ -57,7 +57,7 @@ def saveFile(count, number):
 
 
 if __name__ == '__main__':
-    count = 10
+    count = 100
     countProcess = 1
 
     startWork = datetime.now().timestamp()

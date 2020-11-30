@@ -10,7 +10,8 @@ municipal_type|
 election_level|
 subject_rf_id|
 is_unchecked|
-is_protected|create_date|
+is_protected|
+create_date|
 create_user_id|
 update_date|
 update_user_id|
